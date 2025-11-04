@@ -17,8 +17,10 @@ LilyGo_Class amoled;
 static lv_obj_t* tileview;
 static lv_obj_t* t1;
 static lv_obj_t* t2;
+static lv_obj_t* t3;
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
+static lv_obj_t* t3_label;
 static bool t2_dark = false;  // start tile #2 in light mode
 
 // Function: Tile #2 Color change
@@ -50,26 +52,36 @@ static void create_ui()
   // Add two horizontal tiles
   t1 = lv_tileview_add_tile(tileview, 0, 0, LV_DIR_HOR);
   t2 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
+  t3 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
 
   // Tile #1
   {
     t1_label = lv_label_create(t1);
-    lv_label_set_text(t1_label, "Hello Students");
+    lv_label_set_text(t1_label, "Start screen");
     lv_obj_set_style_text_font(t1_label, &lv_font_montserrat_28, 0);
-    lv_obj_center(t1_label);
+    lv_obj_align_to(t1_label, NULL, LV_ALIGN_CENTER, 0, -150);
     apply_tile_colors(t1, t1_label, /*dark=*/false);
   }
 
   // Tile #2
   {
     t2_label = lv_label_create(t2);
-    lv_label_set_text(t2_label, "Welcome to the workshop");
+    lv_label_set_text(t2_label, "Line graph");
     lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
-    lv_obj_center(t2_label);
+    lv_obj_align_to(t2_label, NULL, LV_ALIGN_CENTER, 0, -150);
 
     apply_tile_colors(t2, t2_label, /*dark=*/false);
     lv_obj_add_flag(t2, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(t2, on_tile2_clicked, LV_EVENT_CLICKED, NULL);
+  }
+
+  // Tile #3
+  {
+    t3_label = lv_label_create(t3);
+    lv_label_set_text(t3_label, "Settings");
+    lv_obj_set_style_text_font(t3_label, &lv_font_montserrat_28, 0);
+    lv_obj_align_to(t3_label, NULL, LV_ALIGN_CENTER, 0, -150);
+    apply_tile_colors(t3, t3_label, /*dark=*/false);
   }
 }
 
