@@ -7,6 +7,10 @@
 #include <LilyGo_AMOLED.h>
 #include <LV_Helper.h>
 #include <lvgl.h>
+#include <vector>
+#include <math.h>
+
+std::vector<int> fetchNoonTemps(double lat, double lon);
 
 // Wi-Fi credentials (Delete these before commiting to GitHub)
 static const char* WIFI_SSID     = "SSID";
@@ -21,6 +25,16 @@ static lv_obj_t* t3;
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
 static lv_obj_t* t3_label;
+static lv_obj_t* chart;
+static lv_chart_series_t* series;
+static bool t2_dark = false;  // start tile #2 in light mode
+
+// Coords for Karlskrona
+const double LAT = 56.2;
+const double LON = 15.5869;
+
+
+
 
 // Function: Tile #2 Color change
 static void apply_tile_colors(lv_obj_t* tile, lv_obj_t* label, bool dark)
@@ -32,6 +46,56 @@ static void apply_tile_colors(lv_obj_t* tile, lv_obj_t* label, bool dark)
   // Text
   lv_obj_set_style_text_color(label, dark ? lv_color_white() : lv_color_black(), 0);
 }
+
+static void on_tile2_clicked(lv_event_t* e)
+{
+  LV_UNUSED(e);
+  t2_dark = !t2_dark;
+  apply_tile_colors(t2, t2_label, t2_dark);
+}
+
+/*
+// Function: Create chart for tile 2 (Used for testing fuctionality)
+static void create_temperature_chart(const std::vector<int>& temps)
+{
+  if (temps.empty()) {
+    Serial.println("No temperature data to plot");
+    return;
+  }
+
+  // Create chart object on tile 2
+  chart = lv_chart_create(t2);
+  lv_obj_set_size(chart, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
+  lv_obj_align(chart, LV_ALIGN_CENTER, 0, 20);
+  
+  // Chart settings
+  lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
+  lv_chart_set_point_count(chart, temps.size());
+  lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -10, 30);  // Temperature range -10 to 30°C
+  
+  // Style
+  lv_obj_set_style_bg_opa(chart, LV_OPA_COVER, 0);
+  lv_obj_set_style_bg_color(chart, lv_color_white(), 0);
+  lv_obj_set_style_border_width(chart, 2, 0);
+  lv_obj_set_style_border_color(chart, lv_color_black(), 0);
+  lv_obj_set_style_radius(chart, 5, 0);
+  
+  // Add series
+  series = lv_chart_add_series(chart, lv_color_hex(0x1E90FF), LV_CHART_AXIS_PRIMARY_Y);
+  
+  // Set temperature data
+  for (size_t i = 0; i < temps.size(); i++) {
+    lv_chart_set_next_value(chart, series, temps[i]);
+  }
+  
+  // Update label to show it's a temperature graph
+  lv_label_set_text(t2_label, "7-Day Temperature Forecast");
+  lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
+  
+  Serial.printf("Chart created with %d temperature points\n", temps.size());
+}
+*/
+
 
 // Function: Creates UI
 static void create_ui()
@@ -121,6 +185,18 @@ void setup()
 
   create_ui();
   connect_wifi();
+
+  // Proceed to chart creation upon boot
+  std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
+  
+  // Create and plot the chart
+  if (!noonTemps.empty()) {
+    create_temperature_chart(noonTemps);
+  } else {
+    lv_label_set_text(t2_label, "Failed to load forecast");
+    Serial.println("No temperature data received");
+  }
+
 }
 
 // Must have function: Loop runs continously on device after setup
