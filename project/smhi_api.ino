@@ -61,7 +61,7 @@ std::vector<int> fetchNoonTemps(double lat, double lon) {
 std::vector<int> fetchPastTemps(int parameter,int station) {
   std::vector<int> temps;
 
-  String url = "https://opendata-download-metobs.smhi.se/api/version/{version}/parameter/";
+  String url = "https://opendata-download-metobs.smhi.se/api/version/latest/parameter/";
   url += String(parameter);
   url += "/station/";
   url += String(station);
