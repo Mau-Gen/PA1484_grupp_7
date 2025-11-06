@@ -31,6 +31,14 @@ static bool t2_dark = false;  // start tile #2 in light mode
 const double LAT = 56.2;
 const double LON = 15.5869;
 
+enum Karlskrona{
+  Station = 65090,
+  Average_AirTemp = 2,
+  Max_AirTemp = 20,
+  Min_AirTemp = 19
+};
+
+
 
 
 
