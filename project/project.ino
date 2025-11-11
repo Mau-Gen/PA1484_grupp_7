@@ -132,18 +132,6 @@ static void create_ui()
     lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
     apply_tile_colors(t2, t2_label, /*dark=*/false);
-
-    // Line graph
-
-    lv_obj_t* chart = lv_chart_create(t2);
-    lv_obj_set_size(chart, 220, 110);
-    lv_obj_align(chart, LV_ALIGN_CENTER, 0, 20);
-
-    lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
-    lv_chart_set_point_count(chart, 7);
-    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -10, 40);
-
-    lv_chart_series_t* ser = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_BLUE), LV_CHART_AXIS_PRIMARY_Y);
   }
 
   // Tile #3
