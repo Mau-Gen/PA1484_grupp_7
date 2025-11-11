@@ -38,26 +38,26 @@ enum Karlskrona{
   Min_AirTemp = 19
 };
 
-
-
-
-
-// Function: Tile #2 Color change
-static void apply_tile_colors(lv_obj_t* tile, lv_obj_t* label, bool dark)
+static void on_dd_city_clicked(lv_event_t* e)
 {
-  // Background
-  lv_obj_set_style_bg_opa(tile, LV_OPA_COVER, 0);
-  lv_obj_set_style_bg_color(tile, dark ? lv_color_black() : lv_color_white(), 0);
-
-  // Text
-  lv_obj_set_style_text_color(label, dark ? lv_color_white() : lv_color_black(), 0);
+  lv_event_code_t code = lv_event_get_code(e);
+  lv_obj_t* obj = lv_event_get_target(e);
+  if(code == LV_EVENT_VALUE_CHANGED) {
+    char buf[32];
+    lv_dropdown_get_selected_str(obj, buf, sizeof(buf));
+    LV_LOG_USER("Option: %s", buf);
+  }
 }
 
-static void on_tile2_clicked(lv_event_t* e)
+static void on_dd_par_clicked(lv_event_t* e)
 {
-  LV_UNUSED(e);
-  t2_dark = !t2_dark;
-  apply_tile_colors(t2, t2_label, t2_dark);
+  lv_event_code_t code = lv_event_get_code(e);
+  lv_obj_t* obj = lv_event_get_target(e);
+  if(code == LV_EVENT_VALUE_CHANGED) {
+    char buf[32];
+    lv_dropdown_get_selected_str(obj, buf, sizeof(buf));
+    LV_LOG_USER("Option: %s", buf);
+  }
 }
 
 /*
@@ -70,7 +70,7 @@ static void create_temperature_chart(const std::vector<int>& temps)
   }
 
   // Create chart object on tile 2
-  chart = lv_chart_create(t2);
+  lv_obj_t* chart = lv_chart_create(t2);
   lv_obj_set_size(chart, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
   lv_obj_align(chart, LV_ALIGN_CENTER, 0, 20);
   
@@ -122,7 +122,6 @@ static void create_ui()
     lv_label_set_text(t1_label, "Start screen");
     lv_obj_set_style_text_font(t1_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t1_label, LV_ALIGN_TOP_MID, 0, 10);
-    apply_tile_colors(t1, t1_label, /*dark=*/false);
   }
 
   // Tile #2
@@ -131,7 +130,6 @@ static void create_ui()
     lv_label_set_text(t2_label, "Line graph");
     lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
-    apply_tile_colors(t2, t2_label, /*dark=*/false);
   }
 
   // Tile #3
@@ -140,15 +138,26 @@ static void create_ui()
     lv_label_set_text(t3_label, "Settings");
     lv_obj_set_style_text_font(t3_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
-    apply_tile_colors(t3, t3_label, /*dark=*/false);
-  }
 
-  {
-    t3_label = lv_label_create(t3);
-    lv_label_set_text(t3_label, "NSYBAU");
-    lv_obj_set_style_text_font(t3_label, &lv_font_montserrat_28, 0);
-    lv_obj_center(t3_label);
-    apply_tile_colors(t3, t3_label, /*dark=*/false);
+    // Settings
+
+    // City
+
+    lv_obj_t* dd_city = lv_dropdown_create(t3);
+    lv_dropdown_set_options(dd_city, "Karlskrona\n"
+    "Stockholm\n"
+    "Visby\n");
+    lv_obj_align(dd_city, LV_ALIGN_TOP_MID, 0, 40);
+    lv_obj_add_event_cb(dd_city, on_dd_city_clicked, LV_EVENT_ALL, NULL);
+    
+    // Parameter
+
+    lv_obj_t* dd_par = lv_dropdown_create(t3);
+    lv_dropdown_set_options(dd_par, "Temperature\n"
+    "Humidity\n"
+    "Rain\n");
+    lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 100);
+    lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_ALL, NULL);
   }
 
 }
