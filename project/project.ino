@@ -22,10 +22,11 @@ static lv_obj_t* tileview;
 static lv_obj_t* t1;
 static lv_obj_t* t2;
 static lv_obj_t* t3;
+static lv_obj_t* t4;
 static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
 static lv_obj_t* t3_label;
-static bool t2_dark = false;  // start tile #2 in light mode
+static lv_obj_t* t4_label;
 
 // Coords for Karlskrona
 const double LAT = 56.2;
@@ -61,7 +62,7 @@ static void on_dd_par_clicked(lv_event_t* e)
 }
 
 /*
-// Function: Create chart for tile 2 (Used for testing fuctionality)
+// Function: Create chart for tile 3 (Used for testing fuctionality)
 static void create_temperature_chart(const std::vector<int>& temps)
 {
   if (temps.empty()) {
@@ -69,8 +70,8 @@ static void create_temperature_chart(const std::vector<int>& temps)
     return;
   }
 
-  // Create chart object on tile 2
-  lv_obj_t* chart = lv_chart_create(t2);
+  // Create chart object on tile 3
+  lv_obj_t* chart = lv_chart_create(t3);
   lv_obj_set_size(chart, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
   lv_obj_align(chart, LV_ALIGN_CENTER, 0, 20);
   
@@ -95,8 +96,8 @@ static void create_temperature_chart(const std::vector<int>& temps)
   }
   
   // Update label to show it's a temperature graph
-  lv_label_set_text(t2_label, "7-Day Temperature Forecast");
-  lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
+  lv_label_set_text(t3_label, "7-Day Temperature Forecast");
+  lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
   
   Serial.printf("Chart created with %d temperature points\n", temps.size());
 }
@@ -115,48 +116,70 @@ static void create_ui()
   t1 = lv_tileview_add_tile(tileview, 0, 0, LV_DIR_HOR);
   t2 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
   t3 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
+  t4 = lv_tileview_add_tile(tileview, 3, 0, LV_DIR_HOR);
 
   // Tile #1
   {
     t1_label = lv_label_create(t1);
-    lv_label_set_text(t1_label, "Start screen");
-    lv_obj_set_style_text_font(t1_label, &lv_font_montserrat_28, 0);
-    lv_obj_align(t1_label, LV_ALIGN_TOP_MID, 0, 10);
+    lv_label_set_text(t1_label, "Group 7");
+    lv_obj_set_style_text_font(t1_label, &lv_font_montserrat_32, 0);
+    lv_obj_align(t1_label, LV_ALIGN_CENTER, 0, -20);
+    lv_obj_t* text = lv_label_create(t1);
+    lv_label_set_text(text, "Version: 0.8");
+    lv_obj_set_style_text_font(text, &lv_font_montserrat_20, 0);
+    lv_obj_align(text, LV_ALIGN_CENTER, 0, 10);
   }
 
   // Tile #2
   {
     t2_label = lv_label_create(t2);
-    lv_label_set_text(t2_label, "Line graph");
+    lv_label_set_text(t2_label, "Weather forecast");
     lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
+
+    lv_obj_t* table = lv_table_create(t2);
+    lv_table_set_row_cnt(table, 7);
+    lv_table_set_col_cnt(table, 3);
+    lv_table_set_cell_value(table, 0, 0, "Day");
+    lv_table_set_cell_value(table, 0, 1, "Icon");
+    // lv_table_set_cell_value(table, 0, 2, param);
+    lv_obj_align(table, LV_ALIGN_CENTER, 0, 0);
   }
 
   // Tile #3
   {
     t3_label = lv_label_create(t3);
-    lv_label_set_text(t3_label, "Settings");
+    lv_label_set_text(t3_label, "Line Graph");
     lv_obj_set_style_text_font(t3_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
+
+    
+  }
+  // Tile #4
+  {
+    t4_label = lv_label_create(t4);
+    lv_label_set_text(t4_label, "Settings");
+    lv_obj_set_style_text_font(t4_label, &lv_font_montserrat_28, 0);
+    lv_obj_align(t4_label, LV_ALIGN_TOP_MID, 0, 10);
 
     // Settings
 
     // City
 
-    lv_obj_t* dd_city = lv_dropdown_create(t3);
+    lv_obj_t* dd_city = lv_dropdown_create(t4);
     lv_dropdown_set_options(dd_city, "Karlskrona\n"
     "Stockholm\n"
     "Visby\n");
-    lv_obj_align(dd_city, LV_ALIGN_TOP_MID, 0, 40);
+    lv_obj_align(dd_city, LV_ALIGN_TOP_MID, 0, 50);
     lv_obj_add_event_cb(dd_city, on_dd_city_clicked, LV_EVENT_ALL, NULL);
     
     // Parameter
 
-    lv_obj_t* dd_par = lv_dropdown_create(t3);
+    lv_obj_t* dd_par = lv_dropdown_create(t4);
     lv_dropdown_set_options(dd_par, "Temperature\n"
     "Humidity\n"
     "Rain\n");
-    lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 100);
+    lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 150);
     lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_ALL, NULL);
   }
 
@@ -202,12 +225,13 @@ void setup()
   std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
   
   // Create and plot the chart
-  if (!noonTemps.empty()) {
+  /*if (!noonTemps.empty()) {
     create_temperature_chart(noonTemps);
   } else {
     lv_label_set_text(t2_label, "Failed to load forecast");
     Serial.println("No temperature data received");
   }
+  */
 
 }
 
