@@ -65,7 +65,7 @@ std::vector<int> fetchPastTemps(int parameter,int station) {
   url += String(parameter);
   url += "/station/";
   url += String(station);
-  url += "/period/{latest-months}/data.json";
+  url += "/period/latest-months/data.json";
 
   Serial.print("Hämtar data från: ");
   Serial.println(url);

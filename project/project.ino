@@ -11,10 +11,11 @@
 #include <math.h>
 
 std::vector<int> fetchNoonTemps(double lat, double lon);
+std::vector<int> fetchPastTemps(int temps, int station);
 
 // Wi-Fi credentials (Delete these before commiting to GitHub)
-static const char* WIFI_SSID     = "SSID";
-static const char* WIFI_PASSWORD = "PWD";
+static const char* WIFI_SSID     = "Miska";
+static const char* WIFI_PASSWORD = "jgsn7898";
 
 LilyGo_Class amoled;
 
@@ -61,7 +62,7 @@ static void on_dd_par_clicked(lv_event_t* e)
   }
 }
 
-/*
+
 // Function: Create chart for tile 3 (Used for testing fuctionality)
 static void create_temperature_chart(const std::vector<int>& temps)
 {
@@ -88,7 +89,7 @@ static void create_temperature_chart(const std::vector<int>& temps)
   lv_obj_set_style_radius(chart, 5, 0);
   
   // Add series
-  series = lv_chart_add_series(chart, lv_color_hex(0x1E90FF), LV_CHART_AXIS_PRIMARY_Y);
+  lv_chart_series_t* series = lv_chart_add_series(chart, lv_color_hex(0x1E90FF), LV_CHART_AXIS_PRIMARY_Y);
   
   // Set temperature data
   for (size_t i = 0; i < temps.size(); i++) {
@@ -96,12 +97,32 @@ static void create_temperature_chart(const std::vector<int>& temps)
   }
   
   // Update label to show it's a temperature graph
-  lv_label_set_text(t3_label, "7-Day Temperature Forecast");
+  lv_label_set_text(t3_label, "Historical Weather Graph");
   lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
   
   Serial.printf("Chart created with %d temperature points\n", temps.size());
 }
-*/
+
+
+static void create_forecast_table(const std::vector<int>& temps)
+{
+  lv_obj_t* table = lv_table_create(t2);
+    lv_table_set_row_cnt(table, 8);
+    lv_table_set_col_cnt(table, 3);
+    lv_table_set_cell_value(table, 0, 0, "Day");
+    lv_table_set_cell_value(table, 0, 1, "Icon");
+    lv_table_set_cell_value(table, 0, 2, "Temperature");
+    const uint32_t row_count = lv_table_get_row_cnt(table);
+    lv_obj_align(table, LV_ALIGN_CENTER, 0, 0);
+    for (uint32_t j = 1; j < row_count; j++) {
+      for (size_t i = 0; i < temps.size(); i++){
+        char tempStr[16];
+        snprintf(tempStr, sizeof(tempStr), "%d", temps[i]);
+        lv_table_set_cell_value(table, j, 2, tempStr);
+      }
+    }
+      
+}
 
 
 // Function: Creates UI
@@ -136,14 +157,6 @@ static void create_ui()
     lv_label_set_text(t2_label, "Weather forecast");
     lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
-
-    lv_obj_t* table = lv_table_create(t2);
-    lv_table_set_row_cnt(table, 7);
-    lv_table_set_col_cnt(table, 3);
-    lv_table_set_cell_value(table, 0, 0, "Day");
-    lv_table_set_cell_value(table, 0, 1, "Icon");
-    // lv_table_set_cell_value(table, 0, 2, param);
-    lv_obj_align(table, LV_ALIGN_CENTER, 0, 0);
   }
 
   // Tile #3
@@ -178,7 +191,7 @@ static void create_ui()
     lv_obj_t* dd_par = lv_dropdown_create(t4);
     lv_dropdown_set_options(dd_par, "Temperature\n"
     "Humidity\n"
-    "Rain\n");
+    "Wind Speed\n");
     lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 150);
     lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_ALL, NULL);
   }
@@ -223,15 +236,25 @@ void setup()
 
   // Proceed to chart creation upon boot
   std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
+  std::vector<int> pastTemps = fetchPastTemps(Average_AirTemp, 65090);
   
   // Create and plot the chart
-  /*if (!noonTemps.empty()) {
-    create_temperature_chart(noonTemps);
+  if (!pastTemps.empty()) {
+    create_temperature_chart(pastTemps);
   } else {
-    lv_label_set_text(t2_label, "Failed to load forecast");
+    lv_label_set_text(t3_label, "Failed to load historical data");
+    Serial.println("No temperature data received");
+    
+  }
+  
+  
+  if (!noonTemps.empty()) {
+    create_forecast_table(noonTemps);
+  } else {
+    lv_label_set_text(t2_label, "Failed to load forecast data");
     Serial.println("No temperature data received");
   }
-  */
+  
 
 }
 
