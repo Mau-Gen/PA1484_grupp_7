@@ -11,7 +11,10 @@
 #include <math.h>
 
 std::vector<int> fetchNoonTemps(double lat, double lon);
-std::vector<int> fetchPastTemps(int temps, int station);
+std::vector<int> fetchPastData(int data, int station);
+
+static void create_temperature_chart(const std::vector<int>& data);
+static void create_forecast_table(const std::vector<int>& temps);
 
 void printVector(std::vector<int> vector){
   for (int i : vector){
@@ -35,6 +38,8 @@ static lv_obj_t* t1_label;
 static lv_obj_t* t2_label;
 static lv_obj_t* t3_label;
 static lv_obj_t* t4_label;
+static lv_obj_t* t2_content;
+static lv_obj_t* t3_content;
 
 // Coords for Karlskrona
 const double LAT = 56.2;
@@ -64,9 +69,9 @@ void updateWeatherUI() {
   if(selectedCity == "Karlskrona"){
     lat = 56.160820; lon = 15.586710; station = 65090;
   } else if(selectedCity == "Stockholm"){
-    lat = 59.329323; lon = 18.068581; station = 98210;
-  } else if(selectedCity == "Göteborg"){
-    lat = 57.708870; lon = 11.974560; station = 72630;
+    lat = 59.329323; lon = 18.068581; station = 98230;
+  } else if(selectedCity == "Goteborg"){
+    lat = 57.708870; lon = 11.974560; station = 71420;
   }
 
   if(selectedParam == "Temperature"){
@@ -74,7 +79,7 @@ void updateWeatherUI() {
     param = 2;
   } else if (selectedParam == "Rain"){
     // Code for rain amount in the API
-    param = 18;
+    param = 5;
   } else if (selectedParam == "Wind Speed"){
     // Code for wind speed in the API
     param = 4;
@@ -82,15 +87,19 @@ void updateWeatherUI() {
 
   // Fetch data
   auto noonTemps = fetchNoonTemps(lat, lon);
-  auto pastTemps = fetchPastTemps(param, station);
+  auto pastData = fetchPastData(param, station);
 
   // Update chart
-  lv_obj_clean(t3);
-  if (!pastTemps.empty()) create_temperature_chart(pastTemps);
+  lv_obj_clean(t3_content);
+  if (!pastData.empty()){
+    create_temperature_chart(pastData);
+  }
 
   // Update table
-  lv_obj_clean(t2);
-  if (!noonTemps.empty()) create_forecast_table(noonTemps);
+  lv_obj_clean(t2_content);
+  if (!noonTemps.empty()){
+    create_forecast_table(noonTemps);
+  }
 }
 
 static void on_dd_city_clicked(lv_event_t* e)
@@ -123,21 +132,21 @@ static void on_dd_par_clicked(lv_event_t* e)
 
 
 // Function: Create chart for tile 3 (Used for testing fuctionality)
-static void create_temperature_chart(const std::vector<int>& temps)
+static void create_temperature_chart(const std::vector<int>& data)
 {
-  if (temps.empty()) {
+  if (data.empty()) {
     Serial.println("No temperature data to plot");
     return;
   }
 
   // Create chart object on tile 3
-  lv_obj_t* chart = lv_chart_create(t3);
+  lv_obj_t* chart = lv_chart_create(t3_content);
   lv_obj_set_size(chart, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
   lv_obj_align(chart, LV_ALIGN_CENTER, 0, 20);
   
   // Chart settings
   lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
-  lv_chart_set_point_count(chart, temps.size());
+  lv_chart_set_point_count(chart, data.size());
   lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -10, 30);  // Temperature range -10 to 30°C
   
   // Style
@@ -151,15 +160,15 @@ static void create_temperature_chart(const std::vector<int>& temps)
   lv_chart_series_t* series = lv_chart_add_series(chart, lv_color_hex(0x1E90FF), LV_CHART_AXIS_PRIMARY_Y);
   
   // Set temperature data
-  for (size_t i = 0; i < temps.size(); i++) {
-    lv_chart_set_next_value(chart, series, temps[i]);
+  for (size_t i = 0; i < data.size(); i++) {
+    lv_chart_set_next_value(chart, series, data[i]);
   }
   
   // Update label to show it's a temperature graph
   lv_label_set_text(t3_label, "Historical Weather Graph");
   lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
   
-  Serial.printf("Chart created with %d temperature points\n", temps.size());
+  Serial.printf("Chart created with %d temperature points\n", data.size());
 }
 
 
@@ -168,7 +177,7 @@ static void create_forecast_table(const std::vector<int>& temps)
   // We want exactly 7 days: today + next 6
   const int DAYS = 7;
 
-  lv_obj_t* table = lv_table_create(t2);
+  lv_obj_t* table = lv_table_create(t2_content);
   lv_table_set_row_cnt(table, DAYS + 1);   // +1 for header
   lv_table_set_col_cnt(table, 3);
 
@@ -210,6 +219,7 @@ static void create_ui()
   t2 = lv_tileview_add_tile(tileview, 1, 0, LV_DIR_HOR);
   t3 = lv_tileview_add_tile(tileview, 2, 0, LV_DIR_HOR);
   t4 = lv_tileview_add_tile(tileview, 3, 0, LV_DIR_HOR);
+  
 
   // Tile #1
   {
@@ -229,6 +239,13 @@ static void create_ui()
     lv_label_set_text(t2_label, "Weather forecast");
     lv_obj_set_style_text_font(t2_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t2_label, LV_ALIGN_TOP_MID, 0, 10);
+
+    // Persistent content container for forecast table
+    t2_content = lv_obj_create(t2);
+    lv_obj_set_size(t2_content, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
+    lv_obj_align(t2_content, LV_ALIGN_CENTER, 0, 20);
+    lv_obj_set_style_bg_opa(t2_content, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(t2_content, 0, 0);
   }
 
   // Tile #3
@@ -238,7 +255,12 @@ static void create_ui()
     lv_obj_set_style_text_font(t3_label, &lv_font_montserrat_28, 0);
     lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
 
-    
+    // Persistent content container for chart
+    t3_content = lv_obj_create(t3);
+    lv_obj_set_size(t3_content, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
+    lv_obj_align(t3_content, LV_ALIGN_CENTER, 0, 20);
+    lv_obj_set_style_bg_opa(t3_content, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(t3_content, 0, 0);
   }
   // Tile #4
   {
@@ -254,9 +276,9 @@ static void create_ui()
     lv_obj_t* dd_city = lv_dropdown_create(t4);
     lv_dropdown_set_options(dd_city, "Karlskrona\n"
     "Stockholm\n"
-    "Visby\n");
+    "Goteborg\n");
     lv_obj_align(dd_city, LV_ALIGN_TOP_MID, 0, 50);
-    lv_obj_add_event_cb(dd_city, on_dd_city_clicked, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(dd_city, on_dd_city_clicked, LV_EVENT_VALUE_CHANGED, NULL);
     
     // Parameter
 
@@ -265,9 +287,10 @@ static void create_ui()
     "Rain\n"
     "Wind Speed\n");
     lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 150);
-    lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_VALUE_CHANGED, NULL);
   }
-
+  
+  lv_obj_scroll_to(tileview, 0, 0, LV_ANIM_OFF);
 }
 
 // Function: Connects to WIFI
@@ -308,12 +331,12 @@ void setup()
 
   // Proceed to chart creation upon boot
   std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
-  std::vector<int> pastTemps = fetchPastTemps(Average_AirTemp, 65090);
+  std::vector<int> pastData = fetchPastData(Average_AirTemp, 65090);
   
-  printVector(pastTemps);
+  printVector(pastData);
   // Create and plot the chart
-  if (!pastTemps.empty()) {
-    create_temperature_chart(pastTemps);
+  if (!pastData.empty()) {
+    create_temperature_chart(pastData);
   } else {
     lv_label_set_text(t3_label, "Failed to load historical data");
     Serial.println("No temperature data received");
@@ -333,15 +356,8 @@ void setup()
 
 // Must have function: Loop runs continously on device after setup
 
-unsigned long lastUpdate = 0;
-
 void loop()
 {
   lv_timer_handler();
   delay(5);
-
-  if (millis() - lastUpdate > 10 * 60 * 1000) {  
-        updateWeatherUI();
-        lastUpdate = millis();
-  }
 }
