@@ -21,8 +21,8 @@ void printVector(std::vector<int> vector){
 }
 
 // Wi-Fi credentials (Delete these before commiting to GitHub)
-static const char* WIFI_SSID     = "SSID";
-static const char* WIFI_PASSWORD = "PASSWORD";
+static const char* WIFI_SSID     = "BTH_Guest";
+static const char* WIFI_PASSWORD = "oliv95lila";
 
 LilyGo_Class amoled;
 
@@ -42,13 +42,10 @@ const double LON = 15.5869;
 
 // Strings for the selected city in settings
 String selectedCity = "Karlskrona";
-String selectedCity = "Stockholm";
-String selectedCity = "Göteborg";
+
 
 // Strings for the selected parameter in settings
 String selectedParam = "Temperature";
-String selectedParam = "Rain";
-String selectedParam = "Wind Speed";
 
 enum Karlskrona{
   Station = 65090,
@@ -105,6 +102,7 @@ static void on_dd_city_clicked(lv_event_t* e)
     lv_dropdown_get_selected_str(obj, buf, sizeof(buf));
     LV_LOG_USER("Option: %s", buf);
     selectedCity = buf;
+    selectedCity.trim();
     updateWeatherUI();
   }
 }
@@ -118,6 +116,7 @@ static void on_dd_par_clicked(lv_event_t* e)
     lv_dropdown_get_selected_str(obj, buf, sizeof(buf));
     LV_LOG_USER("Option: %s", buf);
     selectedParam = buf;
+    selectedParam.trim();
     updateWeatherUI();
   }
 }
