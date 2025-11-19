@@ -21,8 +21,8 @@ void printVector(std::vector<int> vector){
 }
 
 // Wi-Fi credentials (Delete these before commiting to GitHub)
-static const char* WIFI_SSID     = "Miska";
-static const char* WIFI_PASSWORD = "jgsn7898";
+static const char* WIFI_SSID     = "SSID";
+static const char* WIFI_PASSWORD = "PASSWORD";
 
 LilyGo_Class amoled;
 
@@ -40,12 +40,49 @@ static lv_obj_t* t4_label;
 const double LAT = 56.2;
 const double LON = 15.5869;
 
+// Strings for the selected city in settings
+String selectedCity = "Karlskrona";
+String selectedCity = "Stockholm";
+String selectedCity = "Göteborg";
+
+// Strings for the selected parameter in settings
+String selectedParam = "Temperature";
+String selectedParam = "Rain";
+String selectedParam = "Wind Speed";
+
 enum Karlskrona{
   Station = 65090,
   Average_AirTemp = 2,
   Max_AirTemp = 20,
   Min_AirTemp = 19
 };
+
+void updateWeatherUI() {
+  Serial.println("Updating UI based on selected settings...");
+
+  double lat, lon;
+  int station;
+
+  if(selectedCity == "Karlskrona"){
+    lat = 56.160820; lon = 15.586710; station = 65090;
+  } else if(selectedCity == "Stockholm"){
+    lat = 59.329323; lon = 18.068581; station = 98210;
+  } else if(selectedCity == "Göteborg"){
+    lat = 57.708870; lon = 11.974560; station = 72630;
+  }
+
+  // Fetch data
+  auto noonTemps = fetchNoonTemps(lat, lon);
+  auto pastTemps = fetchPastTemps(Average_AirTemp, station);
+
+  // Update chart
+  lv_obj_clean(t3);
+  if (!pastTemps.empty()) create_temperature_chart(pastTemps);
+
+  // Update table
+  lv_obj_clean(t2);
+  if (!noonTemps.empty()) create_forecast_table(noonTemps);
+}
 
 static void on_dd_city_clicked(lv_event_t* e)
 {
@@ -55,6 +92,8 @@ static void on_dd_city_clicked(lv_event_t* e)
     char buf[32];
     lv_dropdown_get_selected_str(obj, buf, sizeof(buf));
     LV_LOG_USER("Option: %s", buf);
+    selectedCity = buf;
+    updateWeatherUI();
   }
 }
 
@@ -66,6 +105,8 @@ static void on_dd_par_clicked(lv_event_t* e)
     char buf[32];
     lv_dropdown_get_selected_str(obj, buf, sizeof(buf));
     LV_LOG_USER("Option: %s", buf);
+    selectedParam = buf;
+    updateWeatherUI();
   }
 }
 
@@ -113,22 +154,35 @@ static void create_temperature_chart(const std::vector<int>& temps)
 
 static void create_forecast_table(const std::vector<int>& temps)
 {
+  // We want exactly 7 days: today + next 6
+  const int DAYS = 7;
+
   lv_obj_t* table = lv_table_create(t2);
-    lv_table_set_row_cnt(table, 8);
-    lv_table_set_col_cnt(table, 3);
-    lv_table_set_cell_value(table, 0, 0, "Day");
-    lv_table_set_cell_value(table, 0, 1, "Icon");
-    lv_table_set_cell_value(table, 0, 2, "Temperature");
-    const uint32_t row_count = lv_table_get_row_cnt(table);
-    lv_obj_align(table, LV_ALIGN_CENTER, 0, 0);
-    for (uint32_t j = 1; j < row_count; j++) {
-      for (size_t i = 0; i < temps.size(); i++){
-        char tempStr[16];
-        snprintf(tempStr, sizeof(tempStr), "%d", temps[i]);
-        lv_table_set_cell_value(table, j, 2, tempStr);
-      }
-    }
-      
+  lv_table_set_row_cnt(table, DAYS + 1);   // +1 for header
+  lv_table_set_col_cnt(table, 3);
+
+  // Header
+  lv_table_set_cell_value(table, 0, 0, "Day");
+  lv_table_set_cell_value(table, 0, 1, "Icon");
+  lv_table_set_cell_value(table, 0, 2, "Temperature");
+  lv_obj_align(table, LV_ALIGN_CENTER, 0, 0);
+  // Fill rows with temperatures
+  for (int day = 0; day < DAYS; day++)
+  {
+    // Make sure we don't read past available data
+    if (day >= temps.size()) break;
+
+    char dayStr[16];
+
+    snprintf(dayStr, sizeof(dayStr), "Day %d", day + 1);
+    lv_table_set_cell_value(table, day + 1, 0, dayStr);
+    lv_table_set_cell_value(table, day + 1, 1, "-");  // placeholder icon
+
+    char tempStr[16];
+
+    snprintf(tempStr, sizeof(tempStr), "%d°C", temps[day]);
+    lv_table_set_cell_value(table, day + 1, 2, tempStr);
+  }
 }
 
 
@@ -197,7 +251,7 @@ static void create_ui()
 
     lv_obj_t* dd_par = lv_dropdown_create(t4);
     lv_dropdown_set_options(dd_par, "Temperature\n"
-    "Humidity\n"
+    "Rain\n"
     "Wind Speed\n");
     lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 150);
     lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_ALL, NULL);
@@ -266,8 +320,16 @@ void setup()
 }
 
 // Must have function: Loop runs continously on device after setup
+
+unsigned long lastUpdate = 0;
+
 void loop()
 {
   lv_timer_handler();
   delay(5);
+
+  if (millis() - lastUpdate > 10 * 60 * 1000) {  
+        updateWeatherUI();
+        lastUpdate = millis();
+  }
 }
