@@ -80,14 +80,16 @@ std::vector<int> fetchPastData(int parameter,int station) {
     return temps;  // returnerar tom lista
   }
 
-  String payload = http.getString();
+  
+  StaticJsonDocument<200> filter;
+  filter["value"][0]["value"] = true;
+  DynamicJsonDocument doc(15000);
+  DeserializationError err = deserializeJson(doc,http.getStream(),DeserializationOption::Filter(filter));
   http.end();
-
-  DynamicJsonDocument doc(240000);
-  DeserializationError err = deserializeJson(doc, payload);
   if (err) {
     Serial.printf("JSON error: %s\n", err.c_str());
     return temps;
+    
   }
 
   JsonArray tsArr = doc["value"].as<JsonArray>();
@@ -101,7 +103,7 @@ std::vector<int> fetchPastData(int parameter,int station) {
   for (JsonObject ts : tsArr) {
     if (!ts.isNull()) {
       int tempC = ts["value"].as<int>();
-      temps.push_back((int)roundf(tempC));
+      temps.push_back((tempC));
     }
   }
 
