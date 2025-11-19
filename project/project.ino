@@ -62,6 +62,7 @@ void updateWeatherUI() {
 
   double lat, lon;
   int station;
+  int param;
 
   if(selectedCity == "Karlskrona"){
     lat = 56.160820; lon = 15.586710; station = 65090;
@@ -71,10 +72,20 @@ void updateWeatherUI() {
     lat = 57.708870; lon = 11.974560; station = 72630;
   }
 
+  if(selectedParam == "Temperature"){
+    // Code for temperature in the API
+    param = 2;
+  } else if (selectedParam == "Rain"){
+    // Code for rain amount in the API
+    param = 18;
+  } else if (selectedParam == "Wind Speed"){
+    // Code for wind speed in the API
+    param = 4;
+  }
+
   // Fetch data
   auto noonTemps = fetchNoonTemps(lat, lon);
-  auto pastTemps = fetchPastTemps(Average_AirTemp, station);
-  printVector(pastTemps);
+  auto pastTemps = fetchPastTemps(param, station);
 
   // Update chart
   lv_obj_clean(t3);
@@ -299,6 +310,7 @@ void setup()
   // Proceed to chart creation upon boot
   std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
   std::vector<int> pastTemps = fetchPastTemps(Average_AirTemp, 65090);
+  
   printVector(pastTemps);
   // Create and plot the chart
   if (!pastTemps.empty()) {
