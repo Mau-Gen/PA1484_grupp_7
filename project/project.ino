@@ -299,7 +299,7 @@ void setup()
   // Proceed to chart creation upon boot
   std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
   std::vector<int> pastTemps = fetchPastTemps(Average_AirTemp, 65090);
-  
+  printVector(pastTemps);
   // Create and plot the chart
   if (!pastTemps.empty()) {
     create_temperature_chart(pastTemps);
