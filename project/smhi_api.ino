@@ -58,7 +58,7 @@ std::vector<int> fetchNoonTemps(double lat, double lon) {
 
 
 // Hämtar genomsnittlig daglig temperatur (avrundade °C) för de senaste 3 månaderna.
-std::vector<int> fetchPastTemps(int parameter,int station) {
+std::vector<int> fetchPastData(int parameter,int station) {
   std::vector<int> temps;
 
   String url = "https://opendata-download-metobs.smhi.se/api/version/latest/parameter/";
@@ -83,7 +83,7 @@ std::vector<int> fetchPastTemps(int parameter,int station) {
   String payload = http.getString();
   http.end();
 
-  DynamicJsonDocument doc(10000);
+  DynamicJsonDocument doc(240000);
   DeserializationError err = deserializeJson(doc, payload);
   if (err) {
     Serial.printf("JSON error: %s\n", err.c_str());
@@ -92,13 +92,14 @@ std::vector<int> fetchPastTemps(int parameter,int station) {
 
   JsonArray tsArr = doc["value"].as<JsonArray>();
   if (tsArr.isNull()) {
-    return temps;
     Serial.println("API:et Är tomt");
+    return temps;
+    
   
   };
 
   for (JsonObject ts : tsArr) {
-    if (!ts.isNull() && ts.containsKey("value")) {
+    if (!ts.isNull()) {
       int tempC = ts["value"].as<int>();
       temps.push_back((int)roundf(tempC));
     }

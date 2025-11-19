@@ -13,6 +13,13 @@
 std::vector<int> fetchNoonTemps(double lat, double lon);
 std::vector<int> fetchPastTemps(int temps, int station);
 
+void printVector(std::vector<int> vector){
+  for (int i : vector){
+    Serial.print(i);
+    Serial.print(",");
+  }
+}
+
 // Wi-Fi credentials (Delete these before commiting to GitHub)
 static const char* WIFI_SSID     = "Miska";
 static const char* WIFI_PASSWORD = "jgsn7898";
