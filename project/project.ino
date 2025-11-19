@@ -74,6 +74,7 @@ void updateWeatherUI() {
   // Fetch data
   auto noonTemps = fetchNoonTemps(lat, lon);
   auto pastTemps = fetchPastTemps(Average_AirTemp, station);
+  printVector(pastTemps);
 
   // Update chart
   lv_obj_clean(t3);
