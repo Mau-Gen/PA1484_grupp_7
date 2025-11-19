@@ -65,7 +65,7 @@ std::vector<int> fetchPastTemps(int parameter,int station) {
   url += String(parameter);
   url += "/station/";
   url += String(station);
-  url += "/period/{latest-months}/data.json";
+  url += "/period/latest-months/data.json";
 
   Serial.print("Hämtar data från: ");
   Serial.println(url);
@@ -91,12 +91,15 @@ std::vector<int> fetchPastTemps(int parameter,int station) {
   }
 
   JsonArray tsArr = doc["value"].as<JsonArray>();
-  if (tsArr.isNull()) return temps;
+  if (tsArr.isNull()) {
+    return temps;
+    Serial.println("API:et Är tomt");
+  
+  };
 
   for (JsonObject ts : tsArr) {
-    //if (temps.size() >= 7) break;
-    if (!ts.isNull() && ts["data"].containsKey("value")) {
-      float tempC = ts["value"].as<float>();
+    if (!ts.isNull() && ts.containsKey("value")) {
+      int tempC = ts["value"].as<int>();
       temps.push_back((int)roundf(tempC));
     }
   }
