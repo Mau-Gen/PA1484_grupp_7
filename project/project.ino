@@ -10,7 +10,7 @@
 #include <vector>
 #include <math.h>
 
-std::vector<int> fetchNoonTemps(double lat, double lon);
+std::vector<int> fetchNoonData(String str, double lat, double lon);
 std::vector<int> fetchPastData(int data, int station);
 
 static void create_temperature_chart(const std::vector<int>& data);
@@ -52,6 +52,8 @@ String selectedCity = "Karlskrona";
 // Strings for the selected parameter in settings
 String selectedParam = "Temperature";
 
+String str = "air_temperature";
+
 enum Karlskrona{
   Station = 65090,
   Average_AirTemp = 2,
@@ -65,6 +67,7 @@ void updateWeatherUI() {
   double lat, lon;
   int station;
   int param;
+  String str;
 
   if(selectedCity == "Karlskrona"){
     lat = 56.160820; lon = 15.586710; station = 65090;
@@ -77,28 +80,58 @@ void updateWeatherUI() {
   if(selectedParam == "Temperature"){
     // Code for temperature in the API
     param = 2;
+    str = "air_temperature";
   } else if (selectedParam == "Rain"){
     // Code for rain amount in the API
     param = 5;
-  } else if (selectedParam == "Wind Speed"){
-    // Code for wind speed in the API
+    str = "precipitation_amount_mean";
+  } else if (selectedParam == "Wind_speed"){
+    // Code for Wind_speed in the API
     param = 4;
+    str = "wind_speed";
   }
 
   // Fetch data
-  auto noonTemps = fetchNoonTemps(lat, lon);
+  auto noonData = fetchNoonData(str, lat, lon);
   auto pastData = fetchPastData(param, station);
 
   // Update chart
-  lv_obj_clean(t3_content);
-  if (!pastData.empty()){
-    create_temperature_chart(pastData);
+  // SAFELY DELETE OLD CHART
+  lv_obj_t* child_chart = lv_obj_get_child(t3_content, 0);
+  while (child_chart) {
+    lv_obj_del(child_chart);
+    child_chart = lv_obj_get_child(t3_content, 0);
+  }
+  lv_refr_now(NULL);  // IMPORTANT
+
+  // Now create the new chart
+  if (!pastData.empty()) {
+      lv_obj_update_layout(t3_content);
+      create_temperature_chart(pastData);
+  } else {
+      lv_obj_t* label = lv_label_create(t3_content);
+      lv_label_set_text(label, "No historical data");
+      lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
   }
 
+
   // Update table
-  lv_obj_clean(t2_content);
-  if (!noonTemps.empty()){
-    create_forecast_table(noonTemps);
+  // SAFELY DELETE OLD TABLE
+  lv_obj_t* child_table = lv_obj_get_child(t2_content, 0);
+  while (child_table) {
+    lv_obj_del(child_table);
+    child_table = lv_obj_get_child(t2_content, 0);
+  }
+  lv_refr_now(NULL);
+
+  // Now create the new table
+  if (!noonData.empty()){
+    lv_obj_update_layout(t2_content);
+    create_forecast_table(noonData);
+  } else {
+    lv_obj_t* label = lv_label_create(t2_content);
+    lv_label_set_text(label, "No forecast data");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
   }
 }
 
@@ -172,7 +205,7 @@ static void create_temperature_chart(const std::vector<int>& data)
 }
 
 
-static void create_forecast_table(const std::vector<int>& temps)
+static void create_forecast_table(const std::vector<int>& data)
 {
   // We want exactly 7 days: today + next 6
   const int DAYS = 7;
@@ -184,13 +217,21 @@ static void create_forecast_table(const std::vector<int>& temps)
   // Header
   lv_table_set_cell_value(table, 0, 0, "Day");
   lv_table_set_cell_value(table, 0, 1, "Icon");
-  lv_table_set_cell_value(table, 0, 2, "Temperature");
+  if(selectedParam == "Temperature"){
+    lv_table_set_cell_value(table, 0, 2, "Temperature");
+  }
+  if(selectedParam == "Rain"){
+    lv_table_set_cell_value(table, 0, 2, "Rain");
+  }
+  if(selectedParam == "Wind_speed"){
+    lv_table_set_cell_value(table, 0, 2, "Wind_speed");
+  }
   lv_obj_align(table, LV_ALIGN_CENTER, 0, 0);
   // Fill rows with temperatures
   for (int day = 0; day < DAYS; day++)
   {
     // Make sure we don't read past available data
-    if (day >= temps.size()) break;
+    if (day >= data.size()) break;
 
     char dayStr[16];
 
@@ -198,10 +239,21 @@ static void create_forecast_table(const std::vector<int>& temps)
     lv_table_set_cell_value(table, day + 1, 0, dayStr);
     lv_table_set_cell_value(table, day + 1, 1, "-");  // placeholder icon
 
-    char tempStr[16];
+    char dataStr[16];
+    if(selectedParam == "Temperature"){
+      snprintf(dataStr, sizeof(dataStr), "%d°C", data[day]);
+      lv_table_set_cell_value(table, day + 1, 2, dataStr);
+    }
 
-    snprintf(tempStr, sizeof(tempStr), "%d°C", temps[day]);
-    lv_table_set_cell_value(table, day + 1, 2, tempStr);
+    if(selectedParam == "Rain"){
+      snprintf(dataStr, sizeof(dataStr), "%dmm", data[day]);
+      lv_table_set_cell_value(table, day + 1, 2, dataStr);
+    }
+
+    if(selectedParam == "Wind_speed"){
+      snprintf(dataStr, sizeof(dataStr), "%dm/s", data[day]);
+      lv_table_set_cell_value(table, day + 1, 2, dataStr);
+    }
   }
 }
 
@@ -242,7 +294,7 @@ static void create_ui()
 
     // Persistent content container for forecast table
     t2_content = lv_obj_create(t2);
-    lv_obj_set_size(t2_content, lv_disp_get_hor_res(NULL) - 40, lv_disp_get_ver_res(NULL) - 100);
+    lv_obj_set_size(t2_content, lv_disp_get_hor_res(NULL) - 20, lv_disp_get_ver_res(NULL) - 100);
     lv_obj_align(t2_content, LV_ALIGN_CENTER, 0, 20);
     lv_obj_set_style_bg_opa(t2_content, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(t2_content, 0, 0);
@@ -285,7 +337,7 @@ static void create_ui()
     lv_obj_t* dd_par = lv_dropdown_create(t4);
     lv_dropdown_set_options(dd_par, "Temperature\n"
     "Rain\n"
-    "Wind Speed\n");
+    "Wind_speed\n");
     lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 150);
     lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_VALUE_CHANGED, NULL);
   }
@@ -330,7 +382,7 @@ void setup()
   connect_wifi();
 
   // Proceed to chart creation upon boot
-  std::vector<int> noonTemps = fetchNoonTemps(LAT, LON);
+  std::vector<int> noonData = fetchNoonData(str, LAT, LON);
   std::vector<int> pastData = fetchPastData(Average_AirTemp, 65090);
   
   printVector(pastData);
@@ -344,8 +396,8 @@ void setup()
   }
   
   
-  if (!noonTemps.empty()) {
-    create_forecast_table(noonTemps);
+  if (!noonData.empty()) {
+    create_forecast_table(noonData);
   } else {
     lv_label_set_text(t2_label, "Failed to load forecast data");
     Serial.println("No temperature data received");

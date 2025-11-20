@@ -5,16 +5,17 @@
 #include <math.h>
 #include <vector>
 
-// Hämtar temperaturer (avrundade °C) kl 12:00Z kommande 7 dagar.
-std::vector<int> fetchNoonTemps(double lat, double lon) {
-  std::vector<int> temps;
+// Hämtar data kl 12:00Z kommande 7 dagar.
+std::vector<int> fetchNoonData(String str, double lat, double lon) {
+  std::vector<int> data;
 
   String url = "https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/";
   url += String(lon, 4);
   url += "/lat/";
   url += String(lat, 4);
   url += "/data.json";
-  url += "?parameters=air_temperature";
+  url += "?parameters=";
+  url += str;
 
   Serial.print("Hämtar data från: ");
   Serial.println(url);
@@ -25,7 +26,7 @@ std::vector<int> fetchNoonTemps(double lat, double lon) {
   if (httpCode != 200) {
     Serial.printf("HTTP-fel: %d\n", httpCode);
     http.end();
-    return temps;  // returnerar tom lista
+    return data;  // returnerar tom lista
   }
 
   String payload = http.getString();
@@ -35,31 +36,31 @@ std::vector<int> fetchNoonTemps(double lat, double lon) {
   DeserializationError err = deserializeJson(doc, payload);
   if (err) {
     Serial.printf("JSON error: %s\n", err.c_str());
-    return temps;
+    return data;
   }
 
   JsonArray tsArr = doc["timeSeries"].as<JsonArray>();
-  if (tsArr.isNull()) return temps;
+  if (tsArr.isNull()) return data;
 
   for (JsonObject ts : tsArr) {
-    if (temps.size() >= 7) break;
+    if (data.size() >= 7) break;
 
     const char* t = ts["time"] | "";
     if (strstr(t, "T12:00:00Z") == nullptr) continue;
 
-    if (!ts["data"].isNull() && ts["data"].containsKey("air_temperature")) {
-      float tempC = ts["data"]["air_temperature"].as<float>();
-      temps.push_back((int)roundf(tempC));
+    if (!ts["data"].isNull() && ts["data"].containsKey(str)) {
+      float value = ts["data"][str].as<float>();
+      data.push_back((int)roundf(value));
     }
   }
 
-  return temps;
+  return data;
 }
 
 
 // Hämtar genomsnittlig daglig temperatur (avrundade °C) för de senaste 3 månaderna.
 std::vector<int> fetchPastData(int parameter,int station) {
-  std::vector<int> temps;
+  std::vector<int> data;
 
   String url = "https://opendata-download-metobs.smhi.se/api/version/latest/parameter/";
   url += String(parameter);
@@ -77,7 +78,7 @@ std::vector<int> fetchPastData(int parameter,int station) {
   if (httpCode != 200) {
     Serial.printf("HTTP-fel: %d\n", httpCode);
     http.end();
-    return temps;  // returnerar tom lista
+    return data;  // returnerar tom lista
   }
 
   
@@ -88,14 +89,14 @@ std::vector<int> fetchPastData(int parameter,int station) {
   http.end();
   if (err) {
     Serial.printf("JSON error: %s\n", err.c_str());
-    return temps;
+    return data;
     
   }
 
   JsonArray tsArr = doc["value"].as<JsonArray>();
   if (tsArr.isNull()) {
     Serial.println("API:et Är tomt");
-    return temps;
+    return data;
     
   
   };
@@ -103,9 +104,9 @@ std::vector<int> fetchPastData(int parameter,int station) {
   for (JsonObject ts : tsArr) {
     if (!ts.isNull()) {
       int tempC = ts["value"].as<int>();
-      temps.push_back((tempC));
+      data.push_back((tempC));
     }
   }
 
-  return temps;
+  return data;
 }
