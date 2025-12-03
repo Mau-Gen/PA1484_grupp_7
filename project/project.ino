@@ -42,6 +42,9 @@ static lv_obj_t* t3_label;
 static lv_obj_t* t4_label;
 static lv_obj_t* t2_content;
 static lv_obj_t* t3_content;
+static lv_obj_t* chart_slider;
+static lv_obj_t* current_chart;
+static std::vector<int> current_chart_data;
 static lv_obj_t* DataLabel;
 
 // Coords for Karlskrona
@@ -284,6 +287,9 @@ static void create_temperature_chart(const std::vector<int>& data)
     return;
   }
 
+  current_chart_data = data;
+
+
   // Create chart object on tile 3
   lv_obj_t* chart = lv_chart_create(t3_content);
   lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 50, lv_obj_get_height(t3_content) - 80);
@@ -292,6 +298,7 @@ static void create_temperature_chart(const std::vector<int>& data)
   // Chart settings
   lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
   lv_chart_set_point_count(chart, data.size());
+
   if(selectedParam == "Temperature") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -30, 30);  // Temperature range -30 to 30°C
     lv_chart_set_axis_tick(
@@ -354,7 +361,7 @@ static void create_temperature_chart(const std::vector<int>& data)
   
   // Set temperature data
   for (size_t i = 0; i < data.size(); i++) {
-    lv_chart_set_next_value(chart, series, data[i]);
+    lv_chart_set_next_value(current_chart, series, data[i]);
   }
   
   // Update label to show it's a temperature graph
@@ -362,8 +369,18 @@ static void create_temperature_chart(const std::vector<int>& data)
   lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
   
   Serial.printf("Chart created with %d points\n", data.size());
-}
+  
+  // Create slider below the chart
+  chart_slider = lv_slider_create(t3_content);
+  lv_obj_set_width(chart_slider, lv_obj_get_width(t3_content) - 60);
+  lv_obj_align(chart_slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+  lv_slider_set_range(chart_slider, 0, data.size() - 1);
+  lv_slider_set_value(chart_slider, data.size() - 1, LV_ANIM_OFF);
 
+  lv_obj_t* info_label = lv_label_create(t3_content);
+  lv_obj_set_style_text_font(info_label, &lv_font_montserrat_14, 0);
+  lv_obj_align(info_label, LV_ALIGN_BOTTOM_MID, 0, -35);
+}
 
 static void create_forecast_table(const std::vector<int>& data)
 {
