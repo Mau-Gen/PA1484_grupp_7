@@ -276,19 +276,59 @@ static void create_temperature_chart(const std::vector<int>& data)
   // Create chart object on tile 3
   lv_obj_t* chart = lv_chart_create(t3_content);
   lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 50, lv_obj_get_height(t3_content) - 80);
-  lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 20, 0);
   
   // Chart settings
   lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
   lv_chart_set_point_count(chart, data.size());
   if(selectedParam == "Temperature") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -10, 30);  // Temperature range -10 to 30°C
+    lv_chart_set_axis_tick(
+        chart, 
+        LV_CHART_AXIS_PRIMARY_Y, 
+        10, // Major tick length
+        5,  // Minor tick length (5 px)
+        5,  // label_num: 5 labels
+        4,  // h_div_num: 4 horizontal divisions
+        true, // Draw ticks and labels
+        40    // y_limit_len
+    );
   } else if(selectedParam == "Air_pressure") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 950, 1050); // Air pressure range 950 to 1050
+    lv_chart_set_axis_tick(
+        chart, 
+        LV_CHART_AXIS_PRIMARY_Y, 
+        10, // Major tick length
+        5,  // Minor tick length
+        11, // label_num: 11 labels
+        10, // h_div_num: 10 horizontal divisions
+        true, // Draw ticks and labels
+        40     // y_limit_len: 0 to keep the range exact
+    );
   } else if(selectedParam == "Humidity") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, 100); // Humidity range 0 to 100
+    lv_chart_set_axis_tick(
+        chart, 
+        LV_CHART_AXIS_PRIMARY_Y, 
+        10, // Major tick length
+        5,  // Minor tick length
+        11, // label_num: 11 labels
+        10, // h_div_num: 10 horizontal divisions
+        true, // Draw ticks and labels
+        40     // y_limit_len: 0
+    );
   } else if(selectedParam == "Wind_speed") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 0, 30); // Wind speed range 0 to 30
+    lv_chart_set_axis_tick(
+        chart, 
+        LV_CHART_AXIS_PRIMARY_Y, 
+        10, // Major tick length
+        5,  // Minor tick length
+        7,  // label_num: 7 labels
+        6,  // h_div_num: 6 horizontal divisions
+        true, // Draw ticks and labels
+        40     // y_limit_len: 0
+    );
   }
 
   // Style
@@ -310,7 +350,7 @@ static void create_temperature_chart(const std::vector<int>& data)
   lv_label_set_text(t3_label, "Historical Weather Graph");
   lv_obj_align(t3_label, LV_ALIGN_TOP_MID, 0, 10);
   
-  Serial.printf("Chart created with %d temperature points\n", data.size());
+  Serial.printf("Chart created with %d points\n", data.size());
 }
 
 
@@ -370,7 +410,7 @@ static void create_forecast_table(const std::vector<int>& data)
     }
 
     if(selectedParam == "Humidity"){
-      snprintf(dataStr, sizeof(dataStr), "%", data[day]);
+      snprintf(dataStr, sizeof(dataStr), "%d",  data[day]);
       lv_table_set_cell_value(table, day + 1, 2, dataStr);
     }
   }
