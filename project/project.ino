@@ -42,6 +42,7 @@ static lv_obj_t* t3_label;
 static lv_obj_t* t4_label;
 static lv_obj_t* t2_content;
 static lv_obj_t* t3_content;
+static lv_obj_t* DataLabel;
 
 // Coords for Karlskrona
 const double LAT = 56.2;
@@ -80,6 +81,17 @@ struct CityParam{
   float lat;
 };
 
+void CreateDataLabel(std::vector<int> Historic_Data){
+  DataLabel = lv_label_create(t3);
+  lv_label_set_text_fmt(DataLabel, "%d",Historic_Data[0]);
+  lv_obj_set_pos(DataLabel, 50, 100);
+
+
+}
+
+void UpdateDataLabel(){
+
+}
 
 
 void updateWeatherUI() {
