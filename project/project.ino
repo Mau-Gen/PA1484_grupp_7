@@ -281,7 +281,17 @@ static void create_temperature_chart(const std::vector<int>& data)
   lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
   lv_chart_set_point_count(chart, data.size());
   if(selectedParam == "Temperature") {
-    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -10, 30);  // Temperature range -10 to 30°C
+    lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -30, 30);  // Temperature range -30 to 30°C
+    lv_chart_set_axis_tick(
+    chart, 
+    LV_CHART_AXIS_PRIMARY_Y, 
+    10,  // major_len: Length of the major tick line (e.g., 10px)
+    5,   // minor_len: Length of the minor tick line (e.g., 5px)
+    7,   // label_num: 7 labels (-30, -20, -10, 0, 10, 20, 30)
+    6,   // h_div_num: 6 horizontal divisions (one between each label)
+    true, // tick_draw: Draw the ticks and labels
+    0     // y_limit_len: Pad the axis (0 for exact range matching)
+    );
   } else if(selectedParam == "Air_pressure") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 950, 1050); // Air pressure range 950 to 1050
     lv_chart_set_axis_tick(
