@@ -298,8 +298,8 @@ static void create_temperature_chart(const std::vector<int>& data)
 
   // Create chart object on tile 3
   lv_obj_t* chart = lv_chart_create(t3_content);
-  lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 40, lv_obj_get_height(t3_content) - 40);
-  lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 20, 20);
+  lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 40, lv_obj_get_height(t3_content) -80);
+  lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 20, 0);
   
   // Chart settings
   lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
