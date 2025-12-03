@@ -81,12 +81,15 @@ std::vector<int> fetchPastData(int parameter,int station) {
     return data;  // returnerar tom lista
   }
 
-  
-  StaticJsonDocument<200> filter;
-  filter["value"][0]["value"] = true;
-  DynamicJsonDocument doc(15000);
-  DeserializationError err = deserializeJson(doc,http.getStream(),DeserializationOption::Filter(filter));
+  String payload = http.getString();
   http.end();
+
+  //StaticJsonDocument<200> filter;
+  //filter["value"][0]["value"] = true;
+  DynamicJsonDocument doc(15000);
+  DeserializationError err = deserializeJson(doc,payload);
+
+
   if (err) {
     Serial.printf("JSON error: %s\n", err.c_str());
     return data;
