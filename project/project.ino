@@ -98,9 +98,9 @@ void UpdateDataLabel(){
 void create_slider(int size){
   chart_slider = lv_slider_create(t3);
   lv_obj_set_width(chart_slider, lv_obj_get_width(t3) - 60);
-  lv_obj_align(chart_slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+  lv_obj_align(chart_slider, LV_ALIGN_BOTTOM_MID, 0, -30);
   lv_slider_set_range(chart_slider, 0, size - 1);
-  lv_slider_set_value(chart_slider, size - 1, LV_ANIM_OFF);
+  lv_slider_set_value(chart_slider, 0, LV_ANIM_OFF);
 }
 
 void updateWeatherUI() {

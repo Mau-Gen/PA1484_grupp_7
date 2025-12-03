@@ -32,7 +32,7 @@ std::vector<int> fetchNoonData(String str, double lat, double lon) {
   String payload = http.getString();
   http.end();
 
-  DynamicJsonDocument doc(250000);
+  DynamicJsonDocument doc(50000);
   DeserializationError err = deserializeJson(doc, payload);
   if (err) {
     Serial.printf("JSON error: %s\n", err.c_str());
