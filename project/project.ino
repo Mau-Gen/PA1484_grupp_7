@@ -76,12 +76,11 @@ void loadDefaults() {
   updateWeatherUI();
 }
 
-enum Karlskrona{
-  Station = 65090,
-  Average_AirTemp = 2,
-  Max_AirTemp = 20,
-  Min_AirTemp = 19
+struct CityParam{
+  float lat;
 };
+
+
 
 void updateWeatherUI() {
   Serial.println("Updating UI based on selected settings...");
@@ -283,16 +282,6 @@ static void create_temperature_chart(const std::vector<int>& data)
   lv_chart_set_point_count(chart, data.size());
   if(selectedParam == "Temperature") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -10, 30);  // Temperature range -10 to 30°C
-    lv_chart_set_axis_tick(
-        chart, 
-        LV_CHART_AXIS_PRIMARY_Y, 
-        10, // Major tick length
-        5,  // Minor tick length (5 px)
-        5,  // label_num: 5 labels
-        4,  // h_div_num: 4 horizontal divisions
-        true, // Draw ticks and labels
-        40    // y_limit_len
-    );
   } else if(selectedParam == "Air_pressure") {
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, 950, 1050); // Air pressure range 950 to 1050
     lv_chart_set_axis_tick(
