@@ -298,7 +298,7 @@ static void create_temperature_chart(const std::vector<int>& data)
 
   // Create chart object on tile 3
   lv_obj_t* chart = lv_chart_create(t3_content);
-  lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 40, lv_obj_get_height(t3_content) - 80);
+  lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 40, lv_obj_get_height(t3_content) - 40);
   lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 20, 20);
   
   // Chart settings
@@ -502,7 +502,9 @@ static void create_ui()
     lv_obj_align(t3_content, LV_ALIGN_CENTER, 0, 20);
     lv_obj_set_style_bg_opa(t3_content, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(t3_content, 0, 0);
+    create_slider(100);
   }
+  
   // Tile #4
   {
     t4_label = lv_label_create(t4);
