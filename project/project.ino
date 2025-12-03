@@ -95,7 +95,13 @@ void CreateDataLabel(std::vector<int> Historic_Data){
 void UpdateDataLabel(){
 
 }
-
+void create_slider(int size){
+  chart_slider = lv_slider_create(t3);
+  lv_obj_set_width(chart_slider, lv_obj_get_width(t3) - 60);
+  lv_obj_align(chart_slider, LV_ALIGN_BOTTOM_MID, 0, -10);
+  lv_slider_set_range(chart_slider, 0, size - 1);
+  lv_slider_set_value(chart_slider, size - 1, LV_ANIM_OFF);
+}
 
 void updateWeatherUI() {
   Serial.println("Updating UI based on selected settings...");
@@ -287,13 +293,13 @@ static void create_temperature_chart(const std::vector<int>& data)
     return;
   }
 
-  current_chart_data = data;
+  ///current_chart_data = data;
 
 
   // Create chart object on tile 3
   lv_obj_t* chart = lv_chart_create(t3_content);
-  lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 50, lv_obj_get_height(t3_content) - 80);
-  lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 20, 0);
+  lv_obj_set_size(chart, lv_obj_get_width(t3_content) - 40, lv_obj_get_height(t3_content) - 80);
+  lv_obj_align_to(chart, NULL, LV_ALIGN_CENTER, 20, 20);
   
   // Chart settings
   lv_chart_set_type(chart, LV_CHART_TYPE_LINE);
@@ -361,7 +367,7 @@ static void create_temperature_chart(const std::vector<int>& data)
   
   // Set temperature data
   for (size_t i = 0; i < data.size(); i++) {
-    lv_chart_set_next_value(current_chart, series, data[i]);
+    lv_chart_set_next_value(chart, series, data[i]);
   }
   
   // Update label to show it's a temperature graph
@@ -371,15 +377,11 @@ static void create_temperature_chart(const std::vector<int>& data)
   Serial.printf("Chart created with %d points\n", data.size());
   
   // Create slider below the chart
-  chart_slider = lv_slider_create(t3_content);
-  lv_obj_set_width(chart_slider, lv_obj_get_width(t3_content) - 60);
-  lv_obj_align(chart_slider, LV_ALIGN_BOTTOM_MID, 0, -10);
-  lv_slider_set_range(chart_slider, 0, data.size() - 1);
-  lv_slider_set_value(chart_slider, data.size() - 1, LV_ANIM_OFF);
 
-  lv_obj_t* info_label = lv_label_create(t3_content);
-  lv_obj_set_style_text_font(info_label, &lv_font_montserrat_14, 0);
-  lv_obj_align(info_label, LV_ALIGN_BOTTOM_MID, 0, -35);
+
+  //lv_obj_t* info_label = lv_label_create(t3_content);
+  //lv_obj_set_style_text_font(info_label, &lv_font_montserrat_14, 0);
+  //lv_obj_align(info_label, LV_ALIGN_BOTTOM_MID, 0, -35);
 }
 
 static void create_forecast_table(const std::vector<int>& data)
