@@ -497,7 +497,7 @@ static void create_forecast_table(const std::vector<int> &data)
 
     if (selectedParam == "Humidity")
     {
-      snprintf(dataStr, sizeof(dataStr), "%d", data[day]);
+      snprintf(dataStr, sizeof(dataStr), "%d%%", data[day]);
       lv_table_set_cell_value(table, day + 1, 2, dataStr);
     }
   }
