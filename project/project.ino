@@ -28,8 +28,8 @@ void printVector(std::vector<int> vector)
 }
 
 // Wi-Fi credentials (Delete these before commiting to GitHub)
-static const char *WIFI_SSID = "Miska";
-static const char *WIFI_PASSWORD = "jgsn7898";
+static const char *WIFI_SSID = "";
+static const char *WIFI_PASSWORD = "";
 
 LilyGo_Class amoled;
 
@@ -304,25 +304,27 @@ static void create_settings_button()
 static void create_save_buttons()
 {
   lv_obj_t *default_button = lv_btn_create(t4);
-  lv_obj_align(default_button, LV_ALIGN_CENTER, 0, 40);
+  lv_obj_set_size(default_button, 120, 50);
+  lv_obj_align(default_button, LV_ALIGN_CENTER, 0, 20);
   lv_obj_add_event_cb(default_button, [](lv_event_t *e)
                       {
     if (lv_event_get_code(e) == LV_EVENT_CLICKED) {
       loadDefaults();
     } }, LV_EVENT_ALL, NULL);
   lv_obj_t *default_label = lv_label_create(default_button);
-  lv_label_set_text(default_label, "Default");
+  lv_label_set_text(default_label, "Reset");
   lv_obj_center(default_label);
 
   lv_obj_t *save_button = lv_btn_create(t4);
-  lv_obj_align(save_button, LV_ALIGN_CENTER, 0, 80);
+  lv_obj_set_size(default_button, 120, 50);
+  lv_obj_align(save_button, LV_ALIGN_CENTER, 0, 100);
   lv_obj_add_event_cb(save_button, [](lv_event_t *e)
                       {
     if (lv_event_get_code(e) == LV_EVENT_CLICKED) {
       saveDefaults();
     } }, LV_EVENT_ALL, NULL);
   lv_obj_t *save_label = lv_label_create(save_button);
-  lv_label_set_text(save_label, "Save");
+  lv_label_set_text(save_label, "Save as Default");
   lv_obj_center(save_label);
 }
 
@@ -579,6 +581,7 @@ static void create_ui()
                                      "Kiruna\n");
     lv_obj_align(dd_city, LV_ALIGN_TOP_MID, 0, 50);
     lv_obj_add_event_cb(dd_city, on_dd_city_clicked, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_size(dd_city, 300, 60);
 
     // Show saved default city
     lv_dropdown_set_text(dd_city, selectedCity.c_str());
@@ -592,6 +595,7 @@ static void create_ui()
                                     "Air_pressure\n");
     lv_obj_align(dd_par, LV_ALIGN_TOP_MID, 0, 150);
     lv_obj_add_event_cb(dd_par, on_dd_par_clicked, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_set_size(dd_par, 300, 60);
 
     // Show saved default parameter
 
